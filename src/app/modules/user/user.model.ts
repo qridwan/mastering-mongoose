@@ -1,11 +1,11 @@
 import { Schema, model } from "mongoose";
-import { IUser } from "./user.interface";
+import { IUser, IUserMethods, UserModel } from "./user.interface";
 
 /*===================================
          Creating schema using Interface
   ====================================*/
 
-const userSchema = new Schema<IUser>({
+const userSchema = new Schema<IUser, UserModel, IUserMethods>({
   id: { type: String, required: true, unique: true },
   role: { type: String, required: true },
   email: { type: String, required: false },
@@ -23,8 +23,15 @@ const userSchema = new Schema<IUser>({
   permanentAddress: { type: String, required: true },
 });
 
+userSchema.static("getAdminUsers", async function getAdminUsers() {
+  const admins = await this.find({ role: "admin" }, { password: 0 });
+  return admins;
+});
+userSchema.method("fullName", function fullName(): string {
+  return this.firstName + " " + this.lastName;
+});
 /*===================================
          Creating Model
   ====================================*/
 
-export const User = model<IUser>("User", userSchema);
+export const User = model<IUser, UserModel>("User", userSchema);
